@@ -1,0 +1,6 @@
+{
+  "name": "DIDOR Restaurant — Dushanbe",
+  "description": "High-end landing page for DIDOR Restaurant in Dushanbe, Tajikistan. Luxury dining, national cuisine, kebabs, 2nd-floor banquet hall for weddings, and VIP rooms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
