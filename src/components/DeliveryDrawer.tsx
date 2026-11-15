@@ -26,6 +26,7 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
   const [userName, setUserName] = useState('');
   const [userPhone, setUserPhone] = useState('+992 ');
   const [orderSent, setOrderSent] = useState(false);
+  const [whatsappOpened, setWhatsappOpened] = useState(false);
 
   if (!isOpen) return null;
 
@@ -49,7 +50,7 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
     phoneLabel: { tg: 'Телефони тамос *', ru: 'Телефон для связи *', en: 'Phone Number *' },
     orderWhatsapp: { tg: 'Фармоиш бо WhatsApp', ru: 'Заказать через WhatsApp', en: 'Order via WhatsApp' },
     orderCall: { tg: 'Занг ба Хадамоти Доставка', ru: 'Позвонить в доставку', en: 'Call Delivery' },
-    orderSuccess: { tg: 'Фармоиш фиристода шуд!', ru: 'Заказ отправлен!', en: 'Order Sent!' },
+    orderSuccess: { tg: 'Фармоиш дархост шуд', ru: 'Заявка подготовлена', en: 'Order Request Prepared' },
   };
 
   const getItemName = (item: CartItem['item']) => {
@@ -70,8 +71,14 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
       `Салом DIDOR Delivery!\nМехоҳам таомҳои зеринро фармоиш диҳам:\n\n${itemsList}\n\n• Ҷамъ: ${totalSum} TJS\n• Муштарӣ: ${userName}\n• Телефон: ${userPhone}\n• Суроға: ${address}`
     );
 
-    window.open(`https://wa.me/992981840404?text=${message}`, '_blank');
-    setOrderSent(true);
+    const whatsappUrl = `https://wa.me/992981840404?text=${message}`;
+    const whatsappWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    if (whatsappWindow) {
+      setWhatsappOpened(true);
+    } else {
+      // If the browser blocks pop-ups, open WhatsApp in the current tab.
+      window.location.assign(whatsappUrl);
+    }
   };
 
   return (
@@ -103,10 +110,18 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                 <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto" />
                 <h4 className="text-xl font-bold text-white">{labels.orderSuccess[currentLang]}</h4>
                 <p className="text-xs text-zinc-300 max-w-xs mx-auto">
-                  Дархости шумо ба хадамоти доставка фиристода шуд. Ба зудӣ бо шумо дар тамос мешавем!
+                  WhatsApp кушода шуд. Паёмро дар WhatsApp худатон фиристед. То тасдиқи тарабхона фармоиш қабулшуда ҳисоб намешавад.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setOrderSent(true)}
+                  disabled={!whatsappOpened}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold"
+                >
+                  Ман паёмро дар WhatsApp фиристодам
+                </button>
                 <a
-                  href={`tel:${RESTAURANT_INFO.phoneDeliveryRaw}`}
+                  href={`tel:${RESTAURANT_INFO.phoneDeliveryRaw}`
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1C1C20] border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-xs"
                 >
                   <Phone className="w-3.5 h-3.5" />
@@ -221,6 +236,8 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                     <input
                       type="tel"
                       required
+                      pattern="\\+?[0-9\\s()-]{9,20}"
+                      title="Рақами телефонро дуруст ворид кунед"
                       value={userPhone}
                       onChange={(e) => setUserPhone(e.target.value)}
                       placeholder="+992 ..."
