@@ -127,7 +127,7 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                 </p>
                 <p className="text-xs text-zinc-400">Маблағ: {serverTotal ?? totalSum} TJS</p>
                 <a
-                  href={`tel:${RESTAURANT_INFO.phoneDeliveryRaw}`
+                  href={`tel:${RESTAURANT_INFO.phoneDeliveryRaw}`}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1C1C20] border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-xs"
                 >
                   <Phone className="w-3.5 h-3.5" />
