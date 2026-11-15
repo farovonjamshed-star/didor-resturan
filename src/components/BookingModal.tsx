@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Language, ReservationData } from '../types';
+import { Language } from '../types';
 import { RESTAURANT_INFO, VIP_CABINS } from '../data/restaurantData';
 import { Calendar, Users, Clock, Phone, User, CheckCircle2, X, MessageSquare, Sparkles } from 'lucide-react';
 
@@ -50,11 +50,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     timeLabel: { tg: 'Вақт', ru: 'Время', en: 'Time' },
     notesLabel: { tg: 'Хоҳишҳои иловагӣ (маросим, ороиш...)', ru: 'Особые пожелания', en: 'Special Requests' },
     submitBtn: { tg: 'Тасдиқи Брон', ru: 'Подтвердить Бронь', en: 'Confirm Reservation' },
-    successTitle: { tg: 'Дархости шумо қабул шуд!', ru: 'Ваша заявка принята!', en: 'Reservation Received!' },
+    successTitle: { tg: 'Дархост омода аст', ru: 'Заявка подготовлена', en: 'Reservation Ready to Send' },
     successDesc: {
-      tg: 'Менеҷери ресторани DIDOR ба зудӣ барои тасдиқи ниҳоӣ бо шумо тамос мегирад.',
-      ru: 'Администратор DIDOR свяжется с вами в течение 10 минут для подтверждения бронирования.',
-      en: 'Our DIDOR reservation host will contact you shortly to confirm the reservation.',
+      tg: 'Маълумот омода шуд. Барои фиристодани дархост тугмаи WhatsApp-ро пахш кунед ва дар худи WhatsApp паёмро фиристед. То он вақт брон тасдиқ нашудааст.',
+      ru: 'Данные подготовлены. Нажмите кнопку WhatsApp и отправьте сообщение в самом приложении. До этого бронирование не подтверждено.',
+      en: 'Your details are ready. Open WhatsApp and press Send there. The reservation is not confirmed until the message is sent and the restaurant confirms it.',
     },
     directCall: {
       tg: 'Ё метавонед ҳоло занг занед:',
@@ -80,6 +80,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         : hallType === 'vip'
         ? 'VIP-Кабинка'
         : 'Мизи тарабхона (Ошёнаи 1)';
+    const selectedCabin = VIP_CABINS.find((c) => c.id === selectedVip)?.name;
     const text = encodeURIComponent(
       `Салом DIDOR Restaurant!\nМехоҳам брон кунам:\n• Навъ: ${hallName}\n• Ном: ${name}\n• Телефон: ${phone}\n• Меҳмонон: ${guests} нафар\n• Сана: ${date}\n• Соат: ${time}\n• Эзоҳ: ${notes || 'Нест'}`
     );
@@ -190,6 +191,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <input
                       type="tel"
                       required
+                      pattern="\\+?[0-9\\s()-]{9,20}"
+                      title="Рақами телефонро дуруст ворид кунед"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder={labels.phonePlaceholder[currentLang]}
@@ -209,6 +212,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <Users className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="number"
+                      required
                       min={hallType === 'banquet' ? 50 : 1}
                       max={hallType === 'banquet' ? 300 : 30}
                       value={guests}
@@ -226,6 +230,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <Calendar className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="date"
+                      required
+                      min={new Date().toISOString().split('T')[0]}
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       className="w-full bg-[#18181B] border border-zinc-700 rounded-xl pl-9 pr-2 py-2 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
@@ -241,6 +247,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <Clock className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="time"
+                      required
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
                       className="w-full bg-[#18181B] border border-zinc-700 rounded-xl pl-9 pr-2 py-2 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
@@ -285,10 +292,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </form>
           </div>
         ) : (
-          /* Confirmation Success Screen */
+          /* Request prepared screen — WhatsApp still requires the user to press Send. */
           <div className="text-center py-6 space-y-5 animate-in zoom-in-95">
             <div className="w-16 h-16 bg-[#211E14] border border-[#D4AF37] rounded-full flex items-center justify-center mx-auto text-[#D4AF37]">
-              <CheckCircle2 className="w-10 h-10" />
+              <MessageSquare className="w-10 h-10" />
             </div>
 
             <div>
