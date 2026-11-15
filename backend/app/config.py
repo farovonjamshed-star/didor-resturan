@@ -1,5 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+
+# Load backend/.env when the app is started from the backend directory.
+load_dotenv()
+
 
 def get_database_url() -> str:
     url = os.getenv("DATABASE_URL", "sqlite:///./didor.db")
