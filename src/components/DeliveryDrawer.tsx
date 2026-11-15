@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { CartItem, Language } from '../types';
 import { RESTAURANT_INFO } from '../data/restaurantData';
-import { ShoppingBag, X, Trash2, Plus, Minus, Phone, MessageSquare, MapPin, Truck, CheckCircle2 } from 'lucide-react';
+import { apiRequest } from '../lib/api';
+import { ShoppingBag, X, Trash2, Plus, Minus, Phone, MapPin, Truck, CheckCircle2 } from 'lucide-react';
 
 interface DeliveryDrawerProps {
   isOpen: boolean;
@@ -26,7 +27,10 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
   const [userName, setUserName] = useState('');
   const [userPhone, setUserPhone] = useState('+992 ');
   const [orderSent, setOrderSent] = useState(false);
-  const [whatsappOpened, setWhatsappOpened] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState('');
+  const [orderId, setOrderId] = useState<number | null>(null);
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
 
   if (!isOpen) return null;
 
@@ -48,7 +52,7 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
     addressLabel: { tg: 'Суроғаи Шумо дар Душанбе *', ru: 'Ваш адрес в Душанбе *', en: 'Your Dushanbe Address *' },
     nameLabel: { tg: 'Номи Шумо *', ru: 'Ваше имя *', en: 'Your Name *' },
     phoneLabel: { tg: 'Телефони тамос *', ru: 'Телефон для связи *', en: 'Phone Number *' },
-    orderWhatsapp: { tg: 'Фармоиш бо WhatsApp', ru: 'Заказать через WhatsApp', en: 'Order via WhatsApp' },
+    orderWhatsapp: { tg: 'Сабти фармоиш', ru: 'Оформить заказ', en: 'Submit Order' },
     orderCall: { tg: 'Занг ба Хадамоти Доставка', ru: 'Позвонить в доставку', en: 'Call Delivery' },
     orderSuccess: { tg: 'Фармоиш дархост шуд', ru: 'Заявка подготовлена', en: 'Order Request Prepared' },
   };
@@ -59,26 +63,33 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
     return item.name;
   };
 
-  const handleSendWhatsApp = (e: React.FormEvent) => {
+  const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
 
-    const itemsList = cart
-      .map((c, i) => `${i + 1}. ${getItemName(c.item)} × ${c.quantity} = ${c.item.price * c.quantity} TJS`)
-      .join('\n');
+    setIsSubmitting(true);
+    setOrderError('');
 
-    const message = encodeURIComponent(
-      `Салом DIDOR Delivery!\nМехоҳам таомҳои зеринро фармоиш диҳам:\n\n${itemsList}\n\n• Ҷамъ: ${totalSum} TJS\n• Муштарӣ: ${userName}\n• Телефон: ${userPhone}\n• Суроға: ${address}`
-    );
-
-    const whatsappUrl = `https://wa.me/992981840404?text=${message}`;
-    const whatsappWindow = window.open(whatsappUrl, '_blank');
-    if (whatsappWindow) {
-      whatsappWindow.opener = null;
-      setWhatsappOpened(true);
-    } else {
-      // If the browser blocks pop-ups, open WhatsApp in the current tab.
-      window.location.assign(whatsappUrl);
+    try {
+      const result = await apiRequest<{ id: number; status: string; total_amount: number }>('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: userName,
+          phone: userPhone,
+          address,
+          items: cart.map(({ item, quantity }) => ({
+            menu_item_id: item.id,
+            quantity,
+          })),
+        }),
+      });
+      setOrderId(result.id);
+      setServerTotal(result.total_amount);
+      setOrderSent(true);
+    } catch (error) {
+      setOrderError(error instanceof Error ? error.message : 'Хатогии номаълум');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -110,17 +121,11 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
               <div className="py-12 text-center space-y-4">
                 <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto" />
                 <h4 className="text-xl font-bold text-white">{labels.orderSuccess[currentLang]}</h4>
+                {orderId !== null && <p className="text-xs text-[#D4AF37]">Рақами фармоиш: #{orderId}</p>}
                 <p className="text-xs text-zinc-300 max-w-xs mx-auto">
-                  WhatsApp кушода шуд. Паёмро дар WhatsApp худатон фиристед. То тасдиқи тарабхона фармоиш қабулшуда ҳисоб намешавад.
+                  Дархости шумо дар базаи маълумот сабт шуд ва мунтазири тасдиқи тарабхона аст. Ин ҳанӯз маънои қабул шудани фармоишро надорад.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setOrderSent(true)}
-                  disabled={!whatsappOpened}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold"
-                >
-                  Ман паёмро дар WhatsApp фиристодам
-                </button>
+                <p className="text-xs text-zinc-400">Маблағ: {serverTotal ?? totalSum} TJS</p>
                 <a
                   href={`tel:${RESTAURANT_INFO.phoneDeliveryRaw}`
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1C1C20] border border-[#D4AF37]/50 text-[#D4AF37] font-semibold text-xs"
@@ -134,6 +139,11 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                     onClick={() => {
                       onClearCart();
                       setOrderSent(false);
+                      setOrderId(null);
+                      setServerTotal(null);
+                      setUserName('');
+                      setUserPhone('+992 ');
+                      setAddress('');
                       onClose();
                     }}
                     className="text-xs text-zinc-500 hover:text-white underline mt-4"
@@ -210,7 +220,7 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                 </div>
 
                 {/* Delivery details form */}
-                <form id="delivery-form" onSubmit={handleSendWhatsApp} className="pt-4 border-t border-zinc-800 space-y-3">
+                <form id="delivery-form" onSubmit={handleCreateOrder} className="pt-4 border-t border-zinc-800 space-y-3">
                   <div className="flex items-center gap-2 text-xs text-amber-200/80 bg-[#1D1A13] p-2.5 rounded-lg border border-[#D4AF37]/20">
                     <Truck className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
                     <span>{labels.deliveryNote[currentLang]}</span>
@@ -262,6 +272,7 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                       />
                     </div>
                   </div>
+                  {orderError && <p role="alert" className="text-xs text-red-400 bg-red-950/30 border border-red-900 rounded-lg p-3">{orderError}</p>}
                 </form>
               </>
             )}
@@ -283,10 +294,11 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
                 <button
                   type="submit"
                   form="delivery-form"
-                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
+                  disabled={isSubmitting}
+                  className="w-full disabled:opacity-60 disabled:cursor-wait py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>{labels.orderWhatsapp[currentLang]}</span>
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>{isSubmitting ? 'Лутфан интизор шавед...' : labels.orderWhatsapp[currentLang]}</span>
                 </button>
 
                 <a
