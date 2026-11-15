@@ -82,7 +82,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         : 'Мизи тарабхона (Ошёнаи 1)';
     const selectedCabin = VIP_CABINS.find((c) => c.id === selectedVip)?.name;
     const text = encodeURIComponent(
-      `Салом DIDOR Restaurant!\nМехоҳам брон кунам:\n• Навъ: ${hallName}\n• Ном: ${name}\n• Телефон: ${phone}\n• Меҳмонон: ${guests} нафар\n• Сана: ${date}\n• Соат: ${time}\n• Эзоҳ: ${notes || 'Нест'}`
+      `Салом DIDOR Restaurant!\nМехоҳам брон кунам:\n• Навъ: ${hallName}${hallType === 'vip' && selectedCabin ? ` (${selectedCabin})` : ''}\n• Ном: ${name}\n• Телефон: ${phone}\n• Меҳмонон: ${guests} нафар\n• Сана: ${date}\n• Соат: ${time}\n• Эзоҳ: ${notes || 'Нест'}`
     );
     const whatsappUrl = `https://wa.me/992000700088?text=${text}`;
     const whatsappWindow = window.open(whatsappUrl, '_blank');
