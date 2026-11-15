@@ -315,7 +315,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           /* Request prepared screen — WhatsApp still requires the user to press Send. */
           <div className="text-center py-6 space-y-5 animate-in zoom-in-95">
             <div className="w-16 h-16 bg-[#211E14] border border-[#D4AF37] rounded-full flex items-center justify-center mx-auto text-[#D4AF37]">
-              <MessageSquare className="w-10 h-10" />
+              <CheckCircle2 className="w-10 h-10" />
             </div>
 
             <div>
