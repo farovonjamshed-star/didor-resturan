@@ -84,7 +84,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     const text = encodeURIComponent(
       `Салом DIDOR Restaurant!\nМехоҳам брон кунам:\n• Навъ: ${hallName}\n• Ном: ${name}\n• Телефон: ${phone}\n• Меҳмонон: ${guests} нафар\n• Сана: ${date}\n• Соат: ${time}\n• Эзоҳ: ${notes || 'Нест'}`
     );
-    window.open(`https://wa.me/992000700088?text=${text}`, '_blank');
+    const whatsappUrl = `https://wa.me/992000700088?text=${text}`;
+    const whatsappWindow = window.open(whatsappUrl, '_blank');
+    if (whatsappWindow) {
+      whatsappWindow.opener = null;
+    } else {
+      window.location.assign(whatsappUrl);
+    }
   };
 
   return (
@@ -315,7 +321,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-zinc-500">Навъ:</span>
                 <span className="text-[#D4AF37] font-bold">
-                  {hallType === 'banquet' ? 'Зали Тӯёна (Ошёнаи 2)' : hallType === 'vip' ? 'VIP-Кабинка' : 'Мизи тарабхона'}
+                  {hallType === 'banquet' ? 'Зали Тӯёна (Ошёнаи 2)' : hallType === 'vip' ? `VIP-Кабинка${VIP_CABINS.find((c) => c.id === selectedVip)?.name ? ` — ${VIP_CABINS.find((c) => c.id === selectedVip)?.name}` : ''}` : 'Мизи тарабхона'}
                 </span>
               </div>
               <div className="flex justify-between">
