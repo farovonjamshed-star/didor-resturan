@@ -45,6 +45,8 @@ class ReservationCreate(BaseModel):
     def validate_vip(self):
         if self.hall_type == "vip" and not self.vip_cabin_id:
             raise ValueError("Choose a VIP cabin")
+        if self.hall_type == "vip" and self.vip_cabin_id not in {"vip-1", "vip-2", "vip-3"}:
+            raise ValueError("Unknown VIP cabin")
         if self.hall_type != "vip" and self.vip_cabin_id:
             raise ValueError("VIP cabin is only valid for VIP reservations")
         if self.hall_type == "banquet" and self.guests < 50:
