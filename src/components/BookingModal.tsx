@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { apiRequest } from '../lib/api';
 import { RESTAURANT_INFO, VIP_CABINS } from '../data/restaurantData';
-import { Calendar, Users, Clock, Phone, User, CheckCircle2, X, MessageSquare, Sparkles } from 'lucide-react';
+import { Calendar, Users, Clock, Phone, User, CheckCircle2, X, Sparkles } from 'lucide-react';
 
 const toLocalDateInput = (date: Date) => {
   const year = date.getFullYear();
@@ -72,11 +72,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       ru: 'Или позвоните прямо сейчас:',
       en: 'Or call directly now:',
     },
-    whatsappBtn: {
-      tg: 'Фиристодан тавассути WhatsApp',
-      ru: 'Отправить в WhatsApp',
-      en: 'Send via WhatsApp',
-    },
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,25 +102,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  const handleWhatsAppSend = () => {
-    const hallName =
-      hallType === 'banquet'
-        ? 'Зали Тӯёна (Ошёнаи 2)'
-        : hallType === 'vip'
-        ? 'VIP-Кабинка'
-        : 'Мизи тарабхона (Ошёнаи 1)';
-    const selectedCabin = VIP_CABINS.find((c) => c.id === selectedVip)?.name;
-    const text = encodeURIComponent(
-      `Салом DIDOR Restaurant!\nМехоҳам брон кунам:\n• Навъ: ${hallName}${hallType === 'vip' && selectedCabin ? ` (${selectedCabin})` : ''}\n• Ном: ${name}\n• Телефон: ${phone}\n• Меҳмонон: ${guests} нафар\n• Сана: ${date}\n• Соат: ${time}\n• Эзоҳ: ${notes || 'Нест'}`
-    );
-    const whatsappUrl = `https://wa.me/992000700088?text=${text}`;
-    const whatsappWindow = window.open(whatsappUrl, '_blank');
-    if (whatsappWindow) {
-      whatsappWindow.opener = null;
-    } else {
-      window.location.assign(whatsappUrl);
-    }
-  };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
@@ -372,19 +349,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-              <button
-                type="button"
-                onClick={handleWhatsAppSend}
-                className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>{labels.whatsappBtn[currentLang]}</span>
-              </button>
-
+            <div className="pt-2">
               <a
                 href={`tel:${RESTAURANT_INFO.phoneBookingRaw}`}
-                className="px-5 py-3 rounded-xl bg-[#1C1C20] hover:bg-zinc-800 border border-[#D4AF37]/50 text-[#D4AF37] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+                className="px-5 py-3 rounded-xl bg-[#1C1C20] hover:bg-zinc-800 border border-[#D4AF37]/50 text-[#D4AF37] font-bold text-xs uppercase tracking-wider inline-flex items-center justify-center gap-2"
               >
                 <Phone className="w-4 h-4" />
                 <span>{RESTAURANT_INFO.phoneBooking}</span>
