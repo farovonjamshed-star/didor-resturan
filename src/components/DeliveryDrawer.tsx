@@ -72,8 +72,9 @@ export const DeliveryDrawer: React.FC<DeliveryDrawerProps> = ({
     );
 
     const whatsappUrl = `https://wa.me/992981840404?text=${message}`;
-    const whatsappWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    const whatsappWindow = window.open(whatsappUrl, '_blank');
     if (whatsappWindow) {
+      whatsappWindow.opener = null;
       setWhatsappOpened(true);
     } else {
       // If the browser blocks pop-ups, open WhatsApp in the current tab.
