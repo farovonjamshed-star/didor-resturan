@@ -208,7 +208,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <input
                       type="tel"
                       required
-                      pattern="\\+?[0-9\\s()-]{9,20}"
+                      pattern="[+]?[0-9 ()-]{9,20}"
                       title="Рақами телефонро дуруст ворид кунед"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
