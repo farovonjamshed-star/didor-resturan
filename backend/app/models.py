@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -29,7 +29,7 @@ class Reservation(Base):
     customer_name: Mapped[str] = mapped_column(String(120), nullable=False)
     phone: Mapped[str] = mapped_column(String(32), nullable=False)
     guests: Mapped[int] = mapped_column(Integer, nullable=False)
-    reservation_date: Mapped[object] = mapped_column(Date, nullable=False)
+    reservation_date: Mapped[date] = mapped_column(Date, nullable=False)
     reservation_time: Mapped[str] = mapped_column(String(5), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
