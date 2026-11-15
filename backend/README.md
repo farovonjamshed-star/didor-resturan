@@ -21,7 +21,7 @@ cd backend
 py run.py
 ```
 
-The API starts at http://127.0.0.1:8000.
+The API starts at http://127.0.0.1:8000. The backend loads settings from `backend/.env` when started from the `backend` folder.
 
 Open http://127.0.0.1:8000/docs for interactive API documentation.
 
@@ -65,6 +65,14 @@ For VIP bookings, also provide `vip_cabin_id` such as `vip-1`.
 ```
 
 The backend calculates totals from its own menu catalog; it never trusts prices sent by the browser.
+
+## Run validation tests
+
+From the `backend` folder:
+
+```powershell
+py -m pytest
+```
 
 ## Important
 
