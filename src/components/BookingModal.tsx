@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Language } from '../types';
 import { apiRequest } from '../lib/api';
 import { RESTAURANT_INFO, VIP_CABINS } from '../data/restaurantData';
@@ -40,6 +40,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [reservationId, setReservationId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setHallType(defaultType);
+      setIsSubmitted(false);
+      setIsSubmitting(false);
+      setSubmitError('');
+      setReservationId(null);
+    }
+  }, [isOpen, defaultType]);
 
   if (!isOpen) return null;
 
