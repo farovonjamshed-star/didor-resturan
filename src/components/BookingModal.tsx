@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
+import { apiRequest } from '../lib/api';
 import { RESTAURANT_INFO, VIP_CABINS } from '../data/restaurantData';
 import { Calendar, Users, Clock, Phone, User, CheckCircle2, X, MessageSquare, Sparkles } from 'lucide-react';
+
+const toLocalDateInput = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -23,12 +31,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [date, setDate] = useState(() => {
     const today = new Date();
     today.setDate(today.getDate() + 1);
-    return today.toISOString().split('T')[0];
+    return toLocalDateInput(today);
   });
   const [time, setTime] = useState('19:00');
   const [notes, setNotes] = useState('');
   const [selectedVip, setSelectedVip] = useState(VIP_CABINS[0].id);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [reservationId, setReservationId] = useState<number | null>(null);
 
   if (!isOpen) return null;
 
@@ -50,11 +61,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     timeLabel: { tg: 'Вақт', ru: 'Время', en: 'Time' },
     notesLabel: { tg: 'Хоҳишҳои иловагӣ (маросим, ороиш...)', ru: 'Особые пожелания', en: 'Special Requests' },
     submitBtn: { tg: 'Тасдиқи Брон', ru: 'Подтвердить Бронь', en: 'Confirm Reservation' },
-    successTitle: { tg: 'Дархост омода аст', ru: 'Заявка подготовлена', en: 'Reservation Ready to Send' },
+    successTitle: { tg: 'Дархост сабт шуд', ru: 'Заявка сохранена', en: 'Request Saved' },
     successDesc: {
-      tg: 'Маълумот омода шуд. Барои фиристодани дархост тугмаи WhatsApp-ро пахш кунед ва дар худи WhatsApp паёмро фиристед. То он вақт брон тасдиқ нашудааст.',
-      ru: 'Данные подготовлены. Нажмите кнопку WhatsApp и отправьте сообщение в самом приложении. До этого бронирование не подтверждено.',
-      en: 'Your details are ready. Open WhatsApp and press Send there. The reservation is not confirmed until the message is sent and the restaurant confirms it.',
+      tg: 'Дархости шумо дар система сабт шуд ва мунтазири тасдиқи тарабхона аст. Ин ҳанӯз бронкунии тасдиқшуда нест.',
+      ru: 'Заявка сохранена в системе и ожидает подтверждения ресторана. Бронирование пока не подтверждено.',
+      en: 'Your request has been saved and is awaiting restaurant approval. The reservation is not confirmed yet.',
     },
     directCall: {
       tg: 'Ё метавонед ҳоло занг занед:',
@@ -68,9 +79,32 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     },
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const result = await apiRequest<{ id: number; status: string }>('/api/reservations', {
+        method: 'POST',
+        body: JSON.stringify({
+          hall_type: hallType,
+          name,
+          phone,
+          guests: Number(guests),
+          date,
+          time,
+          ...(hallType === 'vip' ? { vip_cabin_id: selectedVip } : {}),
+          notes: notes.trim() || null,
+        }),
+      });
+      setReservationId(result.id);
+      setIsSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Хатогии номаълум');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleWhatsAppSend = () => {
@@ -237,7 +271,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <input
                       type="date"
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={toLocalDateInput(new Date())}
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       className="w-full bg-[#18181B] border border-zinc-700 rounded-xl pl-9 pr-2 py-2 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
@@ -288,12 +322,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </a>
               </div>
 
+              {submitError && <p role="alert" className="text-xs text-red-400 bg-red-950/30 border border-red-900 rounded-lg p-3">{submitError}</p>}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#F3E5AB] via-[#D4AF37] to-[#C59B27] hover:brightness-110 shadow-lg transition-all"
+                disabled={isSubmitting}
+                className="w-full py-3.5 disabled:opacity-60 disabled:cursor-wait rounded-xl font-bold text-xs uppercase tracking-wider text-black bg-gradient-to-r from-[#F3E5AB] via-[#D4AF37] to-[#C59B27] hover:brightness-110 shadow-lg transition-all"
               >
-                {labels.submitBtn[currentLang]}
+                {isSubmitting ? 'Лутфан интизор шавед...' : labels.submitBtn[currentLang]}
               </button>
             </form>
           </div>
@@ -310,6 +347,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </h3>
               <p className="text-xs text-zinc-300 max-w-md mx-auto leading-relaxed">
                 {labels.successDesc[currentLang]}
+                {reservationId !== null && <span className="block mt-2 text-[#D4AF37]">Рақами дархост: #{reservationId}</span>}
               </p>
             </div>
 
